@@ -1,0 +1,49 @@
+{{range . }}
+<h1>#{{.Number}} {{.Title}}</h1>
+<table>
+    <tr>
+        <td><strong>Project</strong></td>
+        <td>{{.Project.Label}}</td>
+    </tr>
+    <tr>
+        <td><strong>Status</strong></td>
+        <td>{{.Status}}</td>
+    </tr>
+    <tr>
+        <td><strong>Priority</strong></td>
+        <td>{{.Priority}}</td>
+    </tr>
+    <tr>
+        <td><strong>Assignee</strong></td>
+        <td>{{if .Assignee}}{{.Assignee.Label}}{{else}}Unassigned{{end}}</td>
+    </tr>
+    <tr>
+        <td><strong>Customer</strong></td>
+        <td>{{.Customer.Label}}</td>
+    </tr>
+</table>
+
+<h2>Description</h2>
+{{.Description | render}}
+
+{{if .Attachments}}
+<h3>Attachments</h3>
+<ul>
+    {{range .Attachments}}<li><a href="{{.Link}}">{{.File.Name}}</a></li>{{end}}
+</ul>
+{{end}}
+
+{{if .Notes}}
+<h2>Public Notes</h2>
+{{range .Notes}}<blockquote><strong>{{.Label}}</strong><br>{{.Note | render}}</blockquote>
+{{end}}
+{{end}}
+
+{{if .InternalNotes}}
+<h2>Internal Notes</h2>
+{{range .InternalNotes}}<blockquote><strong>{{.Label}}</strong><br>{{.Note | render}}</blockquote>
+{{end}}
+{{end}}
+
+<hr>
+{{end}}
