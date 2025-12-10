@@ -1,4 +1,4 @@
-package notebook
+package solutions
 
 import (
 	"encoding/json"
@@ -82,8 +82,6 @@ func (s *Solutions) GetTicketsByPoolName(name string, outputMode string) (string
 		projectIDs = append(projectIDs, p.ID)
 	}
 	joinedIDs := strings.Join(projectIDs, ",")
-
-	fmt.Println(joinedIDs)
 
 	ticketParams := map[string]string{
 		"project":    joinedIDs,

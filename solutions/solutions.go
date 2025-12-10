@@ -1,4 +1,4 @@
-package notebook
+package solutions
 
 import (
 	"encoding/json"
@@ -88,15 +88,10 @@ func (s *Solutions) GetCurrentUser() (CurrentUser, error) {
 	return current, nil
 }
 
-func (s *Solutions) Login() error {
+func (s *Solutions) Login() (*S.LoginResponse, error) {
 	r, err := s.App.Login(s.User.Email, s.User.Password)
 	if err != nil {
-		return err
+		return r, err
 	}
-
-	solutions.User.Id = r.UserID
-	solutions.User.Name = r.UserName
-	solutions.SetToken(s.App.Token)
-
-	return nil
+	return r, nil
 }

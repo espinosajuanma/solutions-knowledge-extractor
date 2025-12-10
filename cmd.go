@@ -3,6 +3,7 @@ package notebook
 import (
 	"fmt"
 
+	s "github.com/espinosajuanma/solutions-knowledge-extractor/solutions"
 	Z "github.com/rwxrob/bonzai/z"
 	"github.com/rwxrob/conf"
 	"github.com/rwxrob/help"
@@ -10,7 +11,7 @@ import (
 	"github.com/rwxrob/vars"
 )
 
-var solutions = NewSolutions()
+var solutions = s.NewSolutions()
 var prefix = solutions.App.Name + "." + string(solutions.App.Env)
 
 func init() {
@@ -41,69 +42,6 @@ var Cmd = &Z.Cmd{
 	Issues:      `https://github.com/espinosajuanma/solutions-knowledge-extractor/issues`,
 	Summary:     help.S(_main),
 	Description: help.D(_main),
-}
-
-var ticketCmd = &Z.Cmd{
-	Name:        `tickets`,
-	Aliases:     []string{"ticket", "support"},
-	Commands:    []*Z.Cmd{help.Cmd},
-	Summary:     help.S(_tickets),
-	Description: help.D(_tickets),
-	Usage:       `<pool name>`,
-	MinArgs:     0,
-
-	Call: func(x *Z.Cmd, args ...string) error {
-		_, err := solutions.GetCurrentUser()
-		if err != nil {
-			email, _ := x.Caller.Get(getEmailKey())
-			err := login(email)
-			if err != nil {
-				return err
-			}
-		}
-
-		poolName := "Non-LIMS"
-		outputMode := "markdown"
-		if len(args) > 0 {
-			poolName = args[0]
-		}
-		if len(args) > 1 {
-			outputMode = args[1]
-		}
-		out, err := solutions.GetTicketsByPoolName(poolName, outputMode)
-		if err != nil {
-			return err
-		}
-		term.Print(out)
-		return nil
-	},
-}
-
-var tasksCmd = &Z.Cmd{
-	Name:        `tasks`,
-	Aliases:     []string{"task", "dev"},
-	Commands:    []*Z.Cmd{help.Cmd},
-	Summary:     help.S(_tasks),
-	Description: help.D(_tasks),
-	Usage:       `<project name>`,
-	MinArgs:     0,
-
-	Call: func(x *Z.Cmd, args ...string) error {
-		_, err := solutions.GetCurrentUser()
-		if err != nil {
-			email, _ := x.Caller.Get(getEmailKey())
-			err := login(email)
-			if err != nil {
-				return err
-			}
-		}
-		if len(args) == 0 {
-			return fmt.Errorf("project name is required")
-		}
-		term.Print("")
-
-		return nil
-	},
 }
 
 var loginCmd = &Z.Cmd{
@@ -140,10 +78,13 @@ func login(email string) error {
 	}
 	solutions.User.Password = password
 
-	err := solutions.Login()
+	r, err := solutions.Login()
 	if err != nil {
 		return err
 	}
+	solutions.User.Id = r.UserID
+	solutions.User.Name = r.UserName
+	solutions.SetToken(solutions.App.Token)
 
 	return Z.Vars.Set(getTokenKey(), solutions.App.Token)
 }
@@ -161,16 +102,6 @@ func getTokenKey() string {
 var _main = `
 The solutions command line tool allows you to query tickets and tasks
 directly from the terminal.
-`
-
-var _tickets = `
-The tickets command fetches all support tickets associated with the
-specified pool name.
-`
-
-var _tasks = `
-The tasks command fetches specific tasks associated with the
-specified project name.
 `
 
 var _login = `
