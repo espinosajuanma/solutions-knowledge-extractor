@@ -37,8 +37,8 @@ var Cmd = &Z.Cmd{
 	},
 	Shortcuts:   Z.ArgMap{},
 	Version:     `v0.0.1`,
-	Source:      `https://github.com/espinosajuanma/slingr-notebook`,
-	Issues:      `https://github.com/espinosajuanma/slingr-notebook/issues`,
+	Source:      `https://github.com/espinosajuanma/solutions-knowledge-extractor`,
+	Issues:      `https://github.com/espinosajuanma/solutions-knowledge-extractor/issues`,
 	Summary:     help.S(_main),
 	Description: help.D(_main),
 }

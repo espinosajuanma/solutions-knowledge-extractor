@@ -1,7 +1,7 @@
 package main
 
 import (
-	notebook "github.com/espinosajuanma/slingr-notebook"
+	notebook "github.com/espinosajuanma/solutions-knowledge-extractor"
 )
 
 func main() {
