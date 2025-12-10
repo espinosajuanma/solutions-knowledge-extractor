@@ -1,19 +1,12 @@
 package notebook
 
 import (
-	"bytes"
-	"embed"
 	"encoding/json"
 	"fmt"
-	htmlTemplate "html/template"
 	"strings"
-	textTemplate "text/template"
 
-	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/espinosajuanma/solutions-knowledge-extractor/parser"
 )
-
-//go:embed templates
-var templatesFS embed.FS
 
 const (
 	SIZE = "1000"
@@ -110,42 +103,8 @@ func (s *Solutions) GetTicketsByPoolName(name string, outputMode string) (string
 		return "", fmt.Errorf("failed to unmarshal tickets: %w", err)
 	}
 
-	var output bytes.Buffer
-
 	if outputMode == "html" {
-		funcMap := htmlTemplate.FuncMap{
-			"render": func(s string) htmlTemplate.HTML {
-				return htmlTemplate.HTML(s)
-			},
-		}
-		tmpl, err := htmlTemplate.New("tickets.html").Funcs(funcMap).ParseFS(templatesFS, "templates/tickets.html")
-		if err != nil {
-			return "", fmt.Errorf("failed to parse HTML template: %w", err)
-		}
-		if err := tmpl.Execute(&output, ticketsResponse.Items); err != nil {
-			return "", fmt.Errorf("failed to execute HTML template: %w", err)
-		}
-
-	} else {
-		converter := md.NewConverter("", true, nil)
-
-		funcMap := textTemplate.FuncMap{
-			"render": func(s string) string {
-				markdown, err := converter.ConvertString(s)
-				if err != nil {
-					return s
-				}
-				return markdown
-			},
-		}
-		tmpl, err := textTemplate.New("tickets.md").Funcs(funcMap).ParseFS(templatesFS, "templates/tickets.md")
-		if err != nil {
-			return "", fmt.Errorf("failed to parse Markdown template: %w", err)
-		}
-		if err := tmpl.Execute(&output, ticketsResponse.Items); err != nil {
-			return "", fmt.Errorf("failed to execute Markdown template: %w", err)
-		}
+		return parser.ToHTML("tickets", ticketsResponse.Items)
 	}
-
-	return output.String(), nil
+	return parser.ToMarkdown("tickets", ticketsResponse.Items)
 }
