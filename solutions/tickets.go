@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/espinosajuanma/solutions-knowledge-extractor/parser"
 )
 
 const (
@@ -49,36 +47,33 @@ type Note struct {
 	Note  string `json:"note"`
 }
 
-func (s *Solutions) GetTicketsByPoolName(name string, outputMode string) (string, error) {
-	if outputMode == "" {
-		outputMode = "markdown"
-	}
-	outputMode = strings.ToLower(outputMode)
-	if outputMode != "markdown" && outputMode != "html" {
-		return "", fmt.Errorf("invalid output mode. Use 'markdown' or 'html'")
-	}
-
+func (s *Solutions) GetPoolByName(name string) (Pool, error) {
+	var pool Pool
 	poolParams := map[string]string{
 		"name":  name,
 		"_size": "1",
 	}
 	poolResBytes, err := s.App.GetRecords("support.pools", poolParams)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch pools: %w", err)
+		return pool, fmt.Errorf("failed to fetch pools: %w", err)
 	}
 
 	var pools ManyResponse[Pool]
 	err = json.Unmarshal(poolResBytes, &pools)
 	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal pools: %w", err)
+		return pool, fmt.Errorf("failed to unmarshal pools: %w", err)
 	}
 
 	if len(pools.Items) == 0 {
-		return "", fmt.Errorf("pool '%s' not found", name)
+		return pool, fmt.Errorf("pool '%s' not found", name)
 	}
 
+	return pools.Items[0], nil
+}
+
+func (s *Solutions) GetTicketsByPool(pool Pool) ([]Ticket, error) {
 	var projectIDs []string
-	for _, p := range pools.Items[0].Projects {
+	for _, p := range pool.Projects {
 		projectIDs = append(projectIDs, p.ID)
 	}
 	joinedIDs := strings.Join(projectIDs, ",")
@@ -92,17 +87,13 @@ func (s *Solutions) GetTicketsByPoolName(name string, outputMode string) (string
 
 	ticketResBytes, err := s.App.GetRecords("support.tickets", ticketParams)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch tickets: %w", err)
+		return []Ticket{}, fmt.Errorf("failed to fetch tickets: %w", err)
 	}
 
 	var ticketsResponse ManyResponse[Ticket]
 	err = json.Unmarshal(ticketResBytes, &ticketsResponse)
 	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal tickets: %w", err)
+		return []Ticket{}, fmt.Errorf("failed to unmarshal tickets: %w", err)
 	}
-
-	if outputMode == "html" {
-		return parser.ToHTML("tickets", ticketsResponse.Items)
-	}
-	return parser.ToMarkdown("tickets", ticketsResponse.Items)
+	return ticketsResponse.Items, nil
 }

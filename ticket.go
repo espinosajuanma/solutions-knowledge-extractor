@@ -1,6 +1,7 @@
 package notebook
 
 import (
+	"github.com/espinosajuanma/solutions-knowledge-extractor/parser"
 	Z "github.com/rwxrob/bonzai/z"
 	"github.com/rwxrob/help"
 	"github.com/rwxrob/term"
@@ -33,10 +34,31 @@ var ticketCmd = &Z.Cmd{
 		if len(args) > 1 {
 			outputMode = args[1]
 		}
-		out, err := solutions.GetTicketsByPoolName(poolName, outputMode)
+
+		// Get Tickets
+		pool, err := solutions.GetPoolByName(poolName)
 		if err != nil {
 			return err
 		}
+		tickets, err := solutions.GetTicketsByPool(pool)
+		if err != nil {
+			return err
+		}
+
+		// Print Output
+		var out string
+		if outputMode == "html" {
+			out, err = parser.ToHTML("tickets", tickets)
+			if err != nil {
+				return err
+			}
+		} else {
+			out, err = parser.ToMarkdown("tickets", tickets)
+			if err != nil {
+				return err
+			}
+		}
+
 		term.Print(out)
 		return nil
 	},
